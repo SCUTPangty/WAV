@@ -1,2 +1,2 @@
 # WAV
-我不知道该说什么
+This is a demo project for oprating Wave data in console.
