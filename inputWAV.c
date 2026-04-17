@@ -2,25 +2,47 @@
 #include <windows.h>
 #include <conio.h>
 
-// 4 个按键对应的频率（音调）
+// 单音按键 (A/S/D/F)
 #define FREQ_A    349
 #define FREQ_S    392
 #define FREQ_D    440
 #define FREQ_F    494
 
-// 发声时长（毫秒）
-#define TONE_DURATION 150
+// 和弦按键 (Z/X/C/V)
+#define CHORD_Z   261, 329, 392
+#define CHORD_X   293, 349, 440
+#define CHORD_C   329, 392, 494
+#define CHORD_V   349, 440, 523
+
+static int tone_duration = 150;
+
+// 播放单个音调
+void play_tone(DWORD freq) {
+    Beep(freq, tone_duration);
+}
+
+// 播放和弦
+void play_chord(DWORD f1, DWORD f2, DWORD f3) {
+    Beep(f1, tone_duration);
+    Beep(f2, tone_duration);
+    Beep(f3, tone_duration);
+}
+
+// 同一行刷新显示（不换行）
+void show_msg(const char* msg) {
+    printf("\r%-50s", msg);  // \r 回到行首，刷新显示
+}
 
 int main() {
-    // ========== 关键：强制控制台使用 UTF-8 编码 ==========
     SetConsoleOutputCP(65001);
     SetConsoleCP(65001);
-    // =====================================================
 
-    printf("=========================================\n");
-    printf("  按键 A / S / D / F 播放不同声音\n");
-    printf("  按 Q 退出\n");
-    printf("=========================================\n");
+    printf("=============================================\n");
+    printf(" A/S/D/F=单音  |  Z/X/C/V=和弦 | +/-=调时长\n");
+    printf(" 当前时长：%d ms | 按 Q 退出\n", tone_duration);
+    printf("=============================================\n");
+
+    show_msg("请按键...");
 
     while (1) {
         if (_kbhit()) {
@@ -28,27 +50,56 @@ int main() {
 
             switch (c) {
                 case 'a': case 'A':
-                    printf("→ A 发声\n");
-                    Beep(FREQ_A, TONE_DURATION);
+                    show_msg("→ 按下 A");
+                    play_tone(FREQ_A);
                     break;
-
                 case 's': case 'S':
-                    printf("→ S 发声\n");
-                    Beep(FREQ_S, TONE_DURATION);
+                    show_msg("→ 按下 S");
+                    play_tone(FREQ_S);
                     break;
-
                 case 'd': case 'D':
-                    printf("→ D 发声\n");
-                    Beep(FREQ_D, TONE_DURATION);
+                    show_msg("→ 按下 D");
+                    play_tone(FREQ_D);
+                    break;
+                case 'f': case 'F':
+                    show_msg("→ 按下 F");
+                    play_tone(FREQ_F);
                     break;
 
-                case 'f': case 'F':
-                    printf("→ F 发声\n");
-                    Beep(FREQ_F, TONE_DURATION);
+                case 'z': case 'Z':
+                    show_msg("→ 按下 Z (和弦)");
+                    play_chord(CHORD_Z);
+                    break;
+                case 'x': case 'X':
+                    show_msg("→ 按下 X (和弦)");
+                    play_chord(CHORD_X);
+                    break;
+                case 'c': case 'C':
+                    show_msg("→ 按下 C (和弦)");
+                    play_chord(CHORD_C);
+                    break;
+                case 'v': case 'V':
+                    show_msg("→ 按下 V (和弦)");
+                    play_chord(CHORD_V);
+                    break;
+
+                case '+':
+                    tone_duration += 50;
+                    if (tone_duration > 2000) tone_duration = 2000;
+                    char buf[100];
+                    sprintf(buf, "⏫ 时长：%d ms", tone_duration);
+                    show_msg(buf);
+                    break;
+                case '-':
+                    tone_duration -= 50;
+                    if (tone_duration < 50) tone_duration = 50;
+                    sprintf(buf, "⏬ 时长：%d ms", tone_duration);
+                    show_msg(buf);
                     break;
 
                 case 'q': case 'Q':
-                    printf("退出程序\n");
+                    show_msg("👋 已退出");
+                    printf("\n");
                     return 0;
 
                 default:
